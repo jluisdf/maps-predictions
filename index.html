@@ -1,0 +1,76 @@
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=KEY-CWy54ChRb72o&libraries=places&sensor=false" type="text/javascript"></script>
+<script>
+
+$(function() {
+    
+
+	new google.maps.Map(document.getElementById("map"), {
+		center: { lat: -34.397, lng: 150.644 },
+		zoom: 8,
+	});
+
+    $('#searchTextField2').keypress(function(){
+
+
+    	let value = $(this).val();
+    	let options = {
+		    input: value,
+		    offset: 5,
+		    componentRestrictions: {country: 'mx'},
+	     	fields: ["address_components", "geometry", "icon", "name"],
+		};
+
+    	const service = new google.maps.places.AutocompleteService();
+		service.getPlacePredictions(options, function(predictions, status){
+		// service.getQueryPredictions({ input: value, offset: 5 }, function(predictions, status){
+		    if (status != google.maps.places.PlacesServiceStatus.OK || !predictions) {
+		        console.log(status)
+		        return false
+		    }
+		    
+		    console.log(predictions);
+
+		    // Gelocalizacion
+		    let geocoder = new google.maps.Geocoder()
+	        geocoder.geocode({'address': predictions[0].description}, (results, status) => {
+	            if (status == google.maps.GeocoderStatus.OK) {
+	                let lat = results[0].geometry.location.lat()
+	                let lng = results[0].geometry.location.lng()
+	                console.log(results, results[0], lat, lng)
+	            } else {
+	                console.log("Can't find address: " + status);
+	            }
+	        });
+
+	        // PlaceService getDetails
+		    let placeRequest = { placeId: predictions[0].place_id };
+            let placeService = new google.maps.places.PlacesService(document.getElementById("map"));
+            placeService.getDetails(placeRequest, (placeResult, placeServiceStatus) => {
+                console.log('placeResult:', placeResult, placeResult.geometry.location.lat(), placeResult.geometry.location.lng())
+                console.log('placeServiceStatus:', placeServiceStatus);
+            });
+
+
+		    predictions.map(prediction => {
+				//console.log(prediction);
+		    });
+		});
+
+    });
+
+});
+
+
+</script>
+
+<h2> Example API Maps Predictions and Geocoder</h2>
+
+<input id="searchTextField" type="text" size="50" placeholder="enter your address">
+
+<br />
+<br />
+
+<input id="searchTextField2" type="text" size="50" placeholder="enter your address">
+
+<div id="map"></div>
